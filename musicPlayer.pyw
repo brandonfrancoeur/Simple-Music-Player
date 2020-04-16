@@ -56,6 +56,15 @@ def openFile():
     global filename
     filename = filedialog.askopenfilename()
 
+#Create text box at the top of the main window
+text = Label(window, text="let's do something with this")
+text.pack(pady=10)
+
+#Create a frame inside main window
+insideFrame = Frame(window)
+insideFrame.pack(padx=10, pady=10)
+
+
 #Create submenu
 subMenu = Menu(menuBar, tearoff = 0)
 menuBar.add_cascade(label="File", menu=subMenu)
@@ -66,8 +75,7 @@ subMenu = Menu(menuBar, tearoff = 0)
 menuBar.add_cascade(label="Help", menu=subMenu)
 subMenu.add_command(label="About", command = about)
 
-#Change window dimensions and title
-window.geometry('300x300')
+#Change window  title
 window.title("Simple Music Player")
 
 #set up pygame mixer
@@ -75,21 +83,19 @@ mixer.init()
 
 #change the icon
 window.iconbitmap(r'musical-note.ico')
-text = Label(window, text="let's do something with this")
-text.pack()
 
 #create buttons
 playImage= PhotoImage(file='play-button.png')
-playButton = Button(window, image =playImage, command = play)
-playButton.pack()
+playButton = Button(insideFrame, image =playImage, command = play)
+playButton.pack(side=LEFT, padx=10)
 
 stopImage= PhotoImage(file='stop.png')
-stopButton = Button(window, image =stopImage, command = stop)
-stopButton.pack()
+stopButton = Button(insideFrame, image =stopImage, command = stop)
+stopButton.pack(side=LEFT, padx=10)
 
 pauseImage= PhotoImage(file='pause.png')
-pauseButton = Button(window, image =pauseImage, command = pause)
-pauseButton.pack()
+pauseButton = Button(insideFrame, image =pauseImage, command = pause)
+pauseButton.pack(side=LEFT, padx=10)
 
 #create the volume scale
 volumeScale = Scale(window, from_=0, to=100, orient=HORIZONTAL, command = setVolume)
@@ -97,7 +103,7 @@ volumeScale = Scale(window, from_=0, to=100, orient=HORIZONTAL, command = setVol
 #set the default volume to 75%
 volumeScale.set(75)
 mixer.music.set_volume(0.75)
-volumeScale.pack()
+volumeScale.pack(pady=10)
 
 #create the status bar
 statusBar = Label(window, text="Welcome to Simple Music Player", relief = GROOVE, anchor = W)
