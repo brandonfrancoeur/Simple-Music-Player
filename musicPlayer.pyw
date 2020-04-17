@@ -5,9 +5,9 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 from pygame import *
 from fileinput import filename
+from mutagen.mp3 import MP3
 
-
-#create mainWindow
+#create mainWindowW
 mainWindow = Tk()
 
 #Create the menu bar
@@ -16,6 +16,25 @@ mainWindow.config(menu=menuBar)
 
 
 #Command Functions
+
+def showDetails():
+    fileText['text'] = os.path.basename(filename)
+
+    fileEXT = os.path.splitext(filename)
+
+    if fileEXT[1] == '.mp3':
+        song = MP3(filename)
+        totalLength = song.info.length
+    else:
+        song = mixer.Sound(filename)
+        totalLength = song.get_length()
+
+    #store the minutes and seconds and round out the decimals
+    m, s = divmod(totalLength, 60)
+    m = round(m)
+    s = round(s)
+    timeFormat = '{:02d}:{:02d}'.format(m,s)
+    lengthText['text'] = "Song Length- " + timeFormat
 
 #create a variable to keep track of the status of the music
 paused = FALSE
@@ -31,11 +50,10 @@ def play():
         try:
             mixer.music.load(filename)
             mixer.music.play()
+            showDetails()
             statusBar['text'] = "Playing Music File - " + os.path.basename(filename)
         except:
            tkinter.messagebox.showerror("File not found", "Simple Music Player could not find the file")
-
-
 
 def stop():
     mixer.music.stop()
@@ -83,8 +101,11 @@ def mute():
         volumeScale.set(0)
 
 #Create text box at the top of the main mainWindow
-text = Label(mainWindow, text="let's do something with this")
-text.pack(pady=10)
+fileText = Label(mainWindow, text="Let's Play Some Music")
+fileText.pack(pady=10)
+
+lengthText = Label(mainWindow, text="Song Length- --:--")
+lengthText.pack(pady=10)
 
 #Create frames inside main mainWindow
 insideFrame = Frame(mainWindow)
