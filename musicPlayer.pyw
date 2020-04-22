@@ -3,11 +3,19 @@ from tkinter import filedialog
 import tkinter.messagebox
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-from pygame import *
-from fileinput import filename
+from pygame import mixer
 from mutagen.mp3 import MP3
 import time
 import threading
+
+
+#Global variables
+filePath = None #for holding the current file to be played
+playlist = [] #An array for keeping track of the songs in the playlist
+playListIndex = 0 #keep track of how many songs have been added to the playlist
+paused = FALSE #keep track of whether music is playing or paused
+muted = FALSE #keep track of whether the music has been muted or not
+
 
 #create mainWindowW
 mainWindow = Tk()
@@ -19,6 +27,7 @@ statusBar.pack(side = BOTTOM, fill = X)
 #Create the menu bar
 menuBar = Menu(mainWindow)
 mainWindow.config(menu=menuBar)
+
 
 #create frames for the layout
 
@@ -44,14 +53,16 @@ rightBottomFrame.pack()
 
 #Command Functions
 
-def showDetails():
-    fileEXT = os.path.splitext(filename)
+#This function displays the time details of the song being played
+def showDetails(playSong):
+    global filePath
+    fileEXT = os.path.splitext(playSong) #grab the file extension to determine if it is an mp3 file
 
     if fileEXT[1] == '.mp3':
-        song = MP3(filename)
+        song = MP3(playSong)
         totalLength = song.info.length
     else:
-        song = mixer.Sound(filename)
+        song = mixer.Sound(playSong)
         totalLength = song.get_length()
 
     #store the minutes and seconds and round out the decimals
@@ -67,10 +78,9 @@ def showDetails():
 
 
 def calculateTimeElapsed(length):
-    #using the getbusy() function to keep track of the music stopping
     global paused
     timeElapsed = 0
-    while timeElapsed <= length and mixer.music.get_busy():
+    while timeElapsed <= length and mixer.music.get_busy(): #using the get_busy() function to keep track of the music stopping
         if paused:
             continue
         else:
@@ -82,22 +92,26 @@ def calculateTimeElapsed(length):
             time.sleep(1)
             timeElapsed += 1
 
-#create a variable to keep track of the status of the music
-paused = FALSE
-
 def play():
     global paused
-
+    global filePath
     if paused:
         mixer.music.unpause()
-        statusBar['text'] = "Music Unpaused- " + os.path.basename(filename)
+        statusBar['text'] = "Music Unpaused- " + os.path.basename(filePath)
         paused = FALSE
     else:
         try:
-            mixer.music.load(filename)
+            #stop the current song if one is already playing and sleep to avoid starting multiple threads
+            stop()
+            time.sleep(1)
+
+            chosenSong = playlistBox.curselection()
+            chosenSong = int(chosenSong[0])
+            playSong = playlist[chosenSong]
+            mixer.music.load(playSong)
             mixer.music.play()
-            showDetails()
-            statusBar['text'] = "Playing Music File - " + os.path.basename(filename)
+            showDetails(playSong)
+            statusBar['text'] = "Playing Music File - " + os.path.basename(playSong)
         except:
            tkinter.messagebox.showerror("File not found", "Simple Music Player could not find the file")
 
@@ -118,28 +132,30 @@ def setVolume(val):
 def about():
     tkinter.messagebox.showinfo('About Simple Music Player', 'This is a simple audio player that I created using python. I utilized the pygame mixer library for the functionality' )
 
-#keep track of how many songs have been added to the playlist
-playListIndex = 0
-
 #add a song to the playlist box
-def addToPlaylist(file):
+def addToPlaylist(filename):
     global playListIndex
-    file = os.path.basename(file)
-    playList.insert(playListIndex, file)
+    filename = os.path.basename(filename)
+    playlistBox.insert(playListIndex, filename)
+    playlist.insert(playListIndex, filePath)
     playListIndex+=1
+
+def removeFromPlaylist():
+    chosenSong = playlistBox.curselection()
+    chosenSong = int(chosenSong[0])
+    playlistBox.delete(chosenSong)
+    playlist.pop(chosenSong)
 
 #open a file dialog
 def openFile():
-    global filename
-    filename = filedialog.askopenfilename()
-    addToPlaylist(filename)
+    global filePath
+    filePath = filedialog.askopenfilename()
+    addToPlaylist(filePath)
 
 def rewind():
     play()
     statusBar['text'] = "Music Restarted"
 
-#keep track of whether the music has been muted or not
-muted=FALSE
 def mute():
     global muted
 
@@ -170,8 +186,8 @@ currentTime = Label(rightTopFrame, text="Time Elapsed- --:--")
 currentTime.pack()
 
 #Display the next songs in the queue
-playList = Listbox(leftFrame)
-playList.pack()
+playlistBox = Listbox(leftFrame)
+playlistBox.pack()
 
 #Create submenu
 subMenu = Menu(menuBar, tearoff = 0)
@@ -217,7 +233,7 @@ volumeButton.grid(row=0, column=1)
 addSongButton = Button(leftFrame, text="+ Add", command = openFile)
 addSongButton.pack(side = LEFT)
 
-removeSongButton = Button(leftFrame, text="- Remove")
+removeSongButton = Button(leftFrame, text="- Remove", command = removeFromPlaylist)
 removeSongButton.pack(side = RIGHT)
 
 #create the volume scale
