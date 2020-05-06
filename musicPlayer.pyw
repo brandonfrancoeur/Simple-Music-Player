@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import filedialog
+from tkinter import ttk
+from ttkthemes import themed_tk as tk
 import tkinter.messagebox
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
@@ -17,17 +19,22 @@ paused = FALSE #keep track of whether music is playing or paused
 muted = FALSE #keep track of whether the music has been muted or not
 
 
-#create mainWindowW
-mainWindow = Tk()
+#create main window and add a theme
+mainWindow = tk.ThemedTk()
+mainWindow.get_themes()
+mainWindow.set_theme("arc")
+
+#change the icon
+iconImage = PhotoImage(file='icons/musical-note.png')
+mainWindow.tk.call('wm', 'iconphoto', mainWindow._w, iconImage)
 
 #create the status bar
-statusBar = Label(mainWindow, text="Welcome to Simple Music Player", relief = GROOVE, anchor = W)
+statusBar = ttk.Label(mainWindow, text="Welcome to Simple Music Player", relief = GROOVE, anchor = W)
 statusBar.pack(side = BOTTOM, fill = X)
 
 #Create the menu bar
 menuBar = Menu(mainWindow)
 mainWindow.config(menu=menuBar)
-
 
 #create frames for the layout
 
@@ -126,7 +133,7 @@ def pause():
     statusBar['text'] = "Music Paused"
 
 def setVolume(val):
-    volume = int(val)/100
+    volume = float(val)/100
     mixer.music.set_volume(volume)
 
 def about():
@@ -180,9 +187,9 @@ def exitFunction():
     mainWindow.destroy()
 
 #Create text boxes for Song length and time elapsed
-lengthText = Label(rightTopFrame, text="Song Length- --:--")
+lengthText = ttk.Label(rightTopFrame, text="Song Length- --:--")
 lengthText.pack(pady=10)
-currentTime = Label(rightTopFrame, text="Time Elapsed- --:--")
+currentTime = ttk.Label(rightTopFrame, text="Time Elapsed- --:--")
 currentTime.pack()
 
 #Display the next songs in the queue
@@ -205,39 +212,38 @@ mainWindow.title("Simple Music Player")
 #set up pygame mixer
 mixer.init()
 
-#change the icon
-mainWindow.iconbitmap(r'icons/musical-note.ico')
+
 
 #create buttons
 playImage= PhotoImage(file='icons/play-button.png')
-playButton = Button(rightMiddleFrame, image =playImage, command = play)
+playButton = ttk.Button(rightMiddleFrame, image =playImage, command = play)
 playButton.pack(side=LEFT, padx=10)
 
 stopImage= PhotoImage(file='icons/stop.png')
-stopButton = Button(rightMiddleFrame, image =stopImage, command = stop)
+stopButton = ttk.Button(rightMiddleFrame, image =stopImage, command = stop)
 stopButton.pack(side=LEFT, padx=10)
 
 pauseImage= PhotoImage(file='icons/pause.png')
-pauseButton = Button(rightMiddleFrame, image =pauseImage, command = pause)
+pauseButton = ttk.Button(rightMiddleFrame, image =pauseImage, command = pause)
 pauseButton.pack(side=LEFT, padx=10)
 
 rewindImage= PhotoImage(file='icons/rewind.png')
-rewindButton = Button(rightBottomFrame, image =rewindImage, command = rewind)
+rewindButton = ttk.Button(rightBottomFrame, image =rewindImage, command = rewind)
 rewindButton.grid(row=0, column=0)
 
 volumeImage = PhotoImage(file='icons/volume.png')
 muteImage = PhotoImage(file='icons/mute.png')
-volumeButton = Button(rightBottomFrame, image =volumeImage, command = mute)
+volumeButton = ttk.Button(rightBottomFrame, image =volumeImage, command = mute)
 volumeButton.grid(row=0, column=1)
 
-addSongButton = Button(leftFrame, text="+ Add", command = openFile)
+addSongButton = ttk.Button(leftFrame, text="+ Add", command = openFile)
 addSongButton.pack(side = LEFT)
 
-removeSongButton = Button(leftFrame, text="- Remove", command = removeFromPlaylist)
+removeSongButton = ttk.Button(leftFrame, text="- Remove", command = removeFromPlaylist)
 removeSongButton.pack(side = RIGHT)
 
 #create the volume scale
-volumeScale = Scale(rightBottomFrame, from_=0, to=100, orient=HORIZONTAL, command = setVolume)
+volumeScale = ttk.Scale(rightBottomFrame, from_=0, to=100, orient=HORIZONTAL, command = setVolume)
 
 #set the default volume to 75%
 volumeScale.set(75)
